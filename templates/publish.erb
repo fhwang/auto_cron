@@ -1,0 +1,11 @@
+### publish crons, should only be on one machine per environment ###
+
+# Write your publish crons below
+
+### automatically include app.erb ###
+<% auto_cron_dir = "#{ RAILS_ROOT }/config/auto_cron" %>
+<%=
+app_template = File.join( auto_cron_dir, 'app.erb' )
+ERB.new( File.read( app_template ), nil, nil, '_publish' ).result
+%>
+
