@@ -8,6 +8,8 @@ Dir.entries( src_template_dir ).each do |entry|
   unless %w( . .. ).include?( entry )
     src_template_file = File.join( src_template_dir, entry )
     dest_template_file = File.join( dest_template_dir, entry )
-    FileUtils.cp( src_template_file, dest_template_file )
+    unless File.exist?( dest_template_file )
+      FileUtils.cp( src_template_file, dest_template_file )
+    end
   end
 end
