@@ -1,13 +1,86 @@
-AutoCron
-========
+= AutoCron
 
-Introduction goes here.
+AutoCron is a Rails plugin that lets you write your crontab as files checked in with your Rails project, and writes your crontab every time you deploy. This way, the crontab history is tracked alongside the rest of your application, and backed up in your source control.
+
+Please note that this is an all-or-nothing solution: If you use AutoCron, you can't do any editing of crontabs by hand, because AutoCron will overwrite those changes on your next deploy.
+
+== Installation
+
+EDGE Rails has support for plugin installation from Git, so if you're using EDGE Rails you can install with:
+
+  ./script/plugin install git://github.com/fhwang/auto_cron.git
+
+We're maintaining an SVN clone of the plugin for those of you who aren't on EDGE Rails yet:
+
+  ./script/plugin install svn://rubyforge.org/var/svn/nycrb/auto_cron
+
+== Integrating AutoCron with your application
+
+There are two steps to integrating AutoCron with your application:
+
+  1. Write your auto_cron templates
+
+  2. Call the auto_cron tasks from inside your deployment script
+
+== Modifying your auto_cron templates
+
+By default, AutoCron creates a folder config/auto_cron for you, and puts three templates there.
+
+You'll most likely want to edit publish.erb: That will run on one machine and is a good place for most of your cronjobs.
+
+If you have any jobs that need to run on every machine in your infrastructure, you'll want to put those into app.erb. (See "The 'publish' role vs. the 'app' role" for more on this.)
+
+There's also a header.erb file, which is just a warning that's published at the top of every crontab on every server. You probably don't need to edit this.
+
+Since these are .erb files, you can do lots of things with them:
+
+  # Update friends count once an hour
+  0 * * * * cd /usr/local/apps/myrailsapp/current; /usr/local/bin/ruby ./script/runner -e <%= RAILS_ENV %> "User.update_friends_count"
+
+  # Send emails every minute, but only in production
+  <% if RAILS_ENV == 'production' %>
+  * * * * * cd /usr/local/apps/myrailsapp/current; RAILS_ENV=<%= RAILS_ENV %> ./vendor/ar_mailer/bin/ar_sendmail
+  <% end %>
+  
+== The "publish" role vs. the "app" role
+
+Whether you're running on one server or on 100, you probably have a handful of jobs that only need to be run by one machine. For example, you might do an expensive precalculation once a day, and save the results into the database where all the app servers can get them as needed. AutoCron calls that server the "publish" server, since its job is mostly to publish calculated data into caches. Of course, that's not all the "publish" server does, it can also send emails, or fire off system maintenance tasks. The important distinction is that there should only be one "publish" server in your entire infrastructure.
+
+If you have any jobs that need to run on every machine in your infrastructure, you'll want to put them into app.erb. For example, maybe your Rails app will touch local files in a way that needs to be cleaned up periodically. However, this is a lot less common.
+
+== Integrating with Capistrano 2
+
+To integrate auto_cron with Capistrano, first create a :publish role for each of your environments. This should only be one server per environment.
+
+  if rails_env == 'staging'
+    role :app,     'staging.myrailsapp.com'
+    role :publish, 'staging.myrailsapp.com'
+  elsif rails_env == 'production'
+    role :app,     'prod01.myrailsapp.com', 'prod02.myrailsapp.com',
+                   'prod03.myrailsapp.com'
+    role :publish, 'prod01.myrailsapp.com'
+  end
+
+To update your live crontabs after your deploy, enter these two lines in your Capistrano script.
+
+  auto_cron_app
+  auto_cron_publish
+
+They should run sometime after your new code is deployed; we put this in the :after_symlink task.
+
+auto_cron_app should always be called before auto_cron_publish.
+
+== Integrating with Vlad the Deployer
+
+Since we don't yet use Vlad at Diversion, we haven't had a chance to try to use auto_cron with it, so you're on your own here. Sorry! If you get it working, though, please let us know and we'll add your instructions.
+
+== Contact
+
+If you have any bugs, questions, etc., please feel to email me:
+
+Francis Hwang
+francis@diversionmedia.com
 
 
-Example
-=======
 
-Example goes here.
-
-
-Copyright (c) 2008 [name of plugin creator], released under the MIT license
+Copyright (c) 2008 Diversion Media, released under the MIT license
