@@ -6,7 +6,7 @@ Please note a few important caveats:
 
 * This is an all-or-nothing solution. If you use AutoCron, you can't do any editing of crontabs by hand, because AutoCron will overwrite those changes on your next deploy.
 
-* Similarly, AutoCron currently doesn't work well in a situation where you have more than one Rails app running on the same server. If they both use AutoCron, they'll keep overwriting each other's cron files. We're working on a solution for this, but haven't finished it yet.
+* Similarly, if you have more than one Rails app on a server that uses AutoCron, they can't have the same user account on the server, or else they'll overwrite each others' crontabs. One solution worth trying would be to give each app a different user account, with a common group.
 
 == Installation
 
