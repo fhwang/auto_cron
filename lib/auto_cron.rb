@@ -12,3 +12,4 @@ class AutoCron
     header + "\n\n" + ERB.new( File.read( full_template_path ) ).result
   end
 end
+
