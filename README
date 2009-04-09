@@ -74,6 +74,29 @@ They should run sometime after your new code is deployed; we put this in the :af
 
 auto_cron_app should always be called before auto_cron_publish.
 
+OR
+
+  if rails_env == 'staging'
+    role :publish_cron, 'staging.myrailsapp.com', :crontab => 'publish'
+  
+  elsif rails_env == 'production'
+    role :publish_cron, 'prod01.myrailsapp.com', 'prod02.myrailsapp.com', :crontab => "app"
+    role :publish_cron, 'cron.myrailsapp.com', :crontab => 'publish'
+  
+  end
+
+Then use this task somewhere in your deployment script
+
+  publish_crons
+
+e.g.
+
+task :after_symlink do
+  transaction do
+    publish_crons
+  end
+end
+
 == Integrating with Vlad the Deployer
 
 Since we don't yet use Vlad at Diversion, we haven't had a chance to try to use auto_cron with it, so you're on your own here. Sorry! If you get it working, though, please let us know and we'll add your instructions.
