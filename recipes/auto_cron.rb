@@ -3,11 +3,11 @@
 # overwritten by the publish cron
 
 task :auto_cron_app, :roles => :app do
-  run "cd #{current_path} && rake TEMPLATE=app RAILS_ENV=#{rails_env} auto_cron"
+  run "cd #{current_path} && bundle exec rake TEMPLATE=app RAILS_ENV=#{rails_env} auto_cron"
 end
 
 task :auto_cron_publish, :roles => :publish do
-  run "cd #{current_path} && rake TEMPLATE=publish RAILS_ENV=#{rails_env} auto_cron"
+  run "cd #{current_path} && bundle exec rake TEMPLATE=publish RAILS_ENV=#{rails_env} auto_cron"
 end
 
 desc "Connects to each box individuall and installs the specifed cron 
@@ -18,7 +18,7 @@ task :publish_crons, :roles => :publish_cron do
     targets = []
     targets.push sessions[sd]
     
-    Command.process( "cd #{current_path} && rake TEMPLATE=#{sd.options[:crontab]} RAILS_ENV=#{rails_env} auto_cron", 
+    Command.process( "cd #{current_path} && bundle exec rake TEMPLATE=#{sd.options[:crontab]} RAILS_ENV=#{rails_env} auto_cron", 
                       targets, options.merge(:logger => logger), &block)
                       
     logger.debug "creating crontab:#{sd.options[:crontab]} on #{sd.host}"
